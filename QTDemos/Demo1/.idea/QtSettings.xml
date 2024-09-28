@@ -7,8 +7,8 @@
         <entry key="Debug">
           <value>
             <PerProfileState>
-              <option name="myQmlPath" value="D:/QT/6.7.2/mingw_64/./qml" />
-              <option name="myQtBinPath" value="D:/QT/6.7.2/mingw_64/bin" />
+              <option name="myQmlPath" value="D:/Qt/6.7.2/mingw_64/./qml" />
+              <option name="myQtBinPath" value="D:/Qt/6.7.2/mingw_64/bin" />
             </PerProfileState>
           </value>
         </entry>

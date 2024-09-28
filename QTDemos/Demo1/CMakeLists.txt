@@ -7,6 +7,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 set(CMAKE_PREFIX_PATH "D:/QT/6.7.2/mingw_64")
+set(QT_INSTALL_PATH "D:/QT/6.7.2/mingw_64")
 
 find_package(Qt6 COMPONENTS
         Core
@@ -14,12 +15,28 @@ find_package(Qt6 COMPONENTS
         Widgets
         REQUIRED)
 
-include_directories(Headers Sources)
+include_directories(
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/Sources
+)
+
 
 add_executable(Demo1
         main.cpp
+        Sources/mainwindow.cpp
+        Sources/Headers/mainwindow.h
+        Sources/Forms/mainwindow.ui
         Sources/ifmetwindow.cpp
+        Sources/Headers/ifmetwindow.h
+        Sources/Forms/ifmetwindow.ui
+        Sources/Headers/ExPerson.h
+        Sources/ExPerson.cpp
+        Sources/exwidget.cpp
+        Sources/Headers/exwidget.h
+        Sources/Forms/exwidget.ui
 )
+
+
 target_link_libraries(Demo1
         Qt::Core
         Qt::Gui
@@ -38,6 +55,7 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
             set(QT_INSTALL_PATH "${QT_INSTALL_PATH}/..")
         endif ()
     endif ()
+
     if (EXISTS "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll")
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E make_directory
@@ -47,6 +65,17 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
                 "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
     endif ()
+
+    if (EXISTS "${QT_INSTALL_PATH}/plugins/styles/qmodernwindowsstyle${DEBUG_SUFFIX}.dll")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E make_directory
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/styles/")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                "${QT_INSTALL_PATH}/plugins/styles/qmodernwindowsstyle${DEBUG_SUFFIX}.dll"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/styles/")
+    endif ()
+
     foreach (QT_LIB Core Gui Widgets)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
@@ -54,3 +83,4 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
     endforeach (QT_LIB)
 endif ()
+

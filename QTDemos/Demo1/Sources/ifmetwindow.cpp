@@ -1,18 +1,18 @@
 ﻿//
-// Created by 29016 on 2024/9/24.
+// Created by JinNan on 2024/9/25.
 //
 
-// You may need to build the project (run Qt uic code generator) to get "ui_IFmetWindow.h" resolved
+// You may need to build the project (run Qt uic code generator) to get "ui_IfmetWindow.h" resolved
 
-#include "ifmetwindow.h"
-#include "ui_IFmetWindow.h"
+#include "Headers/ifmetwindow.h"
+#include "Forms/ui_IfmetWindow.h"
 
 
-IFmetWindow::IFmetWindow(QWidget *parent) :
-    QMainWindow(parent), ui(new Ui::IFmetWindow) {
+IfmetWindow::IfmetWindow(QWidget *parent) :
+    QWidget(parent), ui(new Ui::IfmetWindow) {
     ui->setupUi(this);
 }
 
-IFmetWindow::~IFmetWindow() {
+IfmetWindow::~IfmetWindow() {
     delete ui;
 }
