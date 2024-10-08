@@ -6,32 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>692</width>
-    <height>485</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <widget class="QOpenGLWidget" name="openGLWidget">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>110</y>
-      <width>300</width>
-      <height>200</height>
-     </rect>
-    </property>
-   </widget>
-  </widget>
+  <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>692</width>
-     <height>33</height>
+     <width>800</width>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -41,15 +30,10 @@
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
-     <string>编辑</string>
+     <string>查看</string>
     </property>
    </widget>
    <widget class="QMenu" name="menu_3">
-    <property name="title">
-     <string>新建</string>
-    </property>
-   </widget>
-   <widget class="QMenu" name="menu_4">
     <property name="title">
      <string>帮助</string>
     </property>
@@ -57,8 +41,8 @@
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
-   <addaction name="menu_4"/>
   </widget>
+  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
@@ -82,7 +66,7 @@
   </action>
   <action name="actionClear">
    <property name="text">
-    <string>清空画面</string>
+    <string>清空显示</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

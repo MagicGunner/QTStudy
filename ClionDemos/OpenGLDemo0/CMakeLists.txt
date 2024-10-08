@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.29)
-project(A4HelloWorld)
+project(OpenGLDemo0)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_AUTOMOC ON)
@@ -12,33 +12,26 @@ find_package(Qt6 COMPONENTS
         Core
         Gui
         Widgets
-        OpenGL
         OpenGLWidgets
         REQUIRED)
 #find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
 
-# 设置 CMake 自动查找 UI 文件的目录
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/Forms)
 
-#include_directories(
-#        ${PROJECT_SOURCE_DIR}/Headers
-#)
-
-add_executable(A4HelloWorld
-        main.cpp
+add_executable(OpenGLDemo0 main.cpp
         Sources/mainwindow.cpp
         Headers/mainwindow.h
-        Forms/mainwindow.ui
+        Sources/AXBOpenGLWidget.cpp
+        Headers/AXBOpenGLWidget.h
 )
 
-
-target_link_libraries(A4HelloWorld
+target_link_libraries(OpenGLDemo0
         Qt::Core
         Qt::Gui
         Qt::Widgets
-        Qt::OpenGL
         Qt::OpenGLWidgets
 )
+#target_link_libraries(OpenGLDemo0 Qt6::OpenGLWidgets)
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(DEBUG_SUFFIX)
@@ -60,15 +53,6 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
                 COMMAND ${CMAKE_COMMAND} -E copy
                 "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
-    endif ()
-    if (EXISTS "${QT_INSTALL_PATH}/plugins/styles/qmodernwindowsstyle${DEBUG_SUFFIX}.dll")
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E make_directory
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/styles/")
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                "${QT_INSTALL_PATH}/plugins/styles/qmodernwindowsstyle${DEBUG_SUFFIX}.dll"
-                "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/styles/")
     endif ()
     foreach (QT_LIB Core Gui Widgets)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
