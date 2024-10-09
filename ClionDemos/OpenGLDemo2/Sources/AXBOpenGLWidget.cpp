@@ -60,9 +60,9 @@ void AXBOpenGLWidget::clearPaint() {
 void AXBOpenGLWidget::setPolygonMode(const bool isPolygon) {
     makeCurrent();
     if (isPolygon) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
     doneCurrent();
     update();

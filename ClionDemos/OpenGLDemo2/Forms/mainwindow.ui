@@ -73,6 +73,9 @@
    </property>
   </action>
   <action name="actionSetPolygonMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>设置线框模式</string>
    </property>

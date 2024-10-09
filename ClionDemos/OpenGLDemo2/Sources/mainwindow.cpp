@@ -32,9 +32,5 @@ void MainWindow::clearTriggered() const {
 }
 
 void MainWindow::polygonModeToggled(bool isToggled) const {
-    if (isToggled) {
-        openGLWidget->setPolygonMode(true);
-    } else {
-        openGLWidget->setPolygonMode(false);
-    }
+    openGLWidget->setPolygonMode(isToggled);
 }
