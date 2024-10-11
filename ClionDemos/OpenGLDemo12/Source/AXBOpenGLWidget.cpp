@@ -5,6 +5,7 @@
 #include "../Header/AXBOpenGLWidget.h"
 #include <QTime>
 #include <QKeyEvent>
+#include <cmath>
 
 unsigned int VBO, VAO, EBO;
 float mixValue = 0.5f;
@@ -52,15 +53,28 @@ float vertices[] = {
     -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
     -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 };
-// unsigned int indices[] = {
-//     0, 1, 3, // 第一个三角形
-//     1, 2, 3 // 第二个三角形
-// };
+
+QVector cubePositions = {
+    QVector3D(0.0f, 0.0f, 0.0f),
+    QVector3D(2.0f, 5.0f, -15.0f),
+    QVector3D(-1.5f, -2.2f, -2.5f),
+    QVector3D(-3.8f, -2.0f, -12.3f),
+    QVector3D(2.4f, -0.4f, -3.5f),
+    QVector3D(-1.7f, 3.0f, -7.5f),
+    QVector3D(1.3f, -2.0f, -2.5f),
+    QVector3D(1.5f, 2.0f, -2.5f),
+    QVector3D(1.5f, 0.2f, -1.5f),
+    QVector3D(-1.3f, 1.0f, -1.5f)
+};
+
+QVector3D cameraPos(0.0f, 0.0f, 3.0f);
+QVector3D cameraFront(0.0f, 0.0f, 1.0f);
 
 AXBOpenGLWidget::AXBOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent) {
     setFocusPolicy(Qt::StrongFocus);
     timer.setInterval(200);
     timer.start();
+    elapsedTimer.start();
     auto connection = connect(&timer, &QTimer::timeout, [this] {
         update();
     });
@@ -138,10 +152,9 @@ void AXBOpenGLWidget::initializeGL() {
     shaderProgram.setUniformValue("texture1", 1);
     shaderProgram.setUniformValue("mixValue", mixValue);
 
-    projection.perspective(45, static_cast<float>(width()) / static_cast<float>(height()), 0.1f, 100.0f);
-    view.translate(0.0f, 0.0f, -3.0f);
+    projection.perspective(60, static_cast<float>(width()) / static_cast<float>(height()), 0.1f, 100.0f
+    );
     shaderProgram.setUniformValue("Projection", projection);
-    shaderProgram.setUniformValue("View", view);
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -193,12 +206,26 @@ void AXBOpenGLWidget::paintGL() {
     }
     texture0->bind(0);
     texture1->bind(1);
-    const auto timeValue = QTime::currentTime().msec();
-    model.setToIdentity();
-    model.rotate(static_cast<float>(45), 1.0f, 0.0f, 0.0f);
-    shaderProgram.setUniformValue("Model", model);
 
-    glDrawArrays(shapeType, 0, 36);
+    const auto timeValue = static_cast<float>(elapsedTimer.elapsed());
+    constexpr float radius = 15;
+    const auto camX = radius * std::sin(timeValue / 1000);
+    const auto camZ = radius * std::cos(timeValue / 1000);
+    view.setToIdentity();
+    view.lookAt(QVector3D(camX, 0.0f, camZ), QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f));
+    shaderProgram.setUniformValue("View", view);
+
+
+    for (auto i = 0; i < cubePositions.count(); i++) {
+        auto position = cubePositions[i];
+        model.setToIdentity();
+        model.translate(position);
+        if (i == 1 || i % 3 == 0) {
+            model.rotate(timeValue, 1.0f, 0.2f, 5.0f);
+        }
+        shaderProgram.setUniformValue("Model", model);
+        glDrawArrays(shapeType, 0, 36);
+    }
 
     glBindVertexArray(0);
 }

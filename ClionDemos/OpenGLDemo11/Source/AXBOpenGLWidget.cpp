@@ -52,10 +52,19 @@ float vertices[] = {
     -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
     -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 };
-// unsigned int indices[] = {
-//     0, 1, 3, // 第一个三角形
-//     1, 2, 3 // 第二个三角形
-// };
+
+QVector cubePositions = {
+    QVector3D(0.0f, 0.0f, 0.0f),
+    QVector3D(2.0f, 5.0f, -15.0f),
+    QVector3D(-1.5f, -2.2f, -2.5f),
+    QVector3D(-3.8f, -2.0f, -12.3f),
+    QVector3D(2.4f, -0.4f, -3.5f),
+    QVector3D(-1.7f, 3.0f, -7.5f),
+    QVector3D(1.3f, -2.0f, -2.5f),
+    QVector3D(1.5f, 2.0f, -2.5f),
+    QVector3D(1.5f, 0.2f, -1.5f),
+    QVector3D(-1.3f, 1.0f, -1.5f)
+};
 
 AXBOpenGLWidget::AXBOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent) {
     setFocusPolicy(Qt::StrongFocus);
@@ -138,7 +147,8 @@ void AXBOpenGLWidget::initializeGL() {
     shaderProgram.setUniformValue("texture1", 1);
     shaderProgram.setUniformValue("mixValue", mixValue);
 
-    projection.perspective(45, static_cast<float>(width()) / static_cast<float>(height()), 0.1f, 100.0f);
+    projection.perspective(60, static_cast<float>(width()) / static_cast<float>(height()), 0.1f, 100.0f
+    );
     view.translate(0.0f, 0.0f, -3.0f);
     shaderProgram.setUniformValue("Projection", projection);
     shaderProgram.setUniformValue("View", view);
@@ -194,11 +204,17 @@ void AXBOpenGLWidget::paintGL() {
     texture0->bind(0);
     texture1->bind(1);
     const auto timeValue = QTime::currentTime().msec();
-    model.setToIdentity();
-    model.rotate(static_cast<float>(45), 1.0f, 0.0f, 0.0f);
-    shaderProgram.setUniformValue("Model", model);
 
-    glDrawArrays(shapeType, 0, 36);
+    for (auto i = 0; i < cubePositions.count(); i++) {
+        auto position = cubePositions[i];
+        model.setToIdentity();
+        model.translate(position);
+        if (i == 1 || i % 3 == 0) {
+            model.rotate(static_cast<float>(timeValue), 1.0f, 0.2f, 5.0f);
+        }
+        shaderProgram.setUniformValue("Model", model);
+        glDrawArrays(shapeType, 0, 36);
+    }
 
     glBindVertexArray(0);
 }

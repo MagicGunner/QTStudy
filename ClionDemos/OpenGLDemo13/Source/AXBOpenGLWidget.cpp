@@ -5,9 +5,11 @@
 #include "../Header/AXBOpenGLWidget.h"
 #include <QTime>
 #include <QKeyEvent>
+#include <cmath>
 
 unsigned int VBO, VAO, EBO;
 float mixValue = 0.5f;
+float fov = 45;
 QMatrix4x4 model, view, projection;
 float vertices[] = {
     -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
@@ -52,15 +54,28 @@ float vertices[] = {
     -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
     -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 };
-// unsigned int indices[] = {
-//     0, 1, 3, // 第一个三角形
-//     1, 2, 3 // 第二个三角形
-// };
+
+QVector cubePositions = {
+    QVector3D(0.0f, 0.0f, 0.0f),
+    QVector3D(2.0f, 5.0f, -15.0f),
+    QVector3D(-1.5f, -2.2f, -2.5f),
+    QVector3D(-3.8f, -2.0f, -12.3f),
+    QVector3D(2.4f, -0.4f, -3.5f),
+    QVector3D(-1.7f, 3.0f, -7.5f),
+    QVector3D(1.3f, -2.0f, -2.5f),
+    QVector3D(1.5f, 2.0f, -2.5f),
+    QVector3D(1.5f, 0.2f, -1.5f),
+    QVector3D(-1.3f, 1.0f, -1.5f)
+};
+
+QVector3D cameraPos(0.0f, 0.0f, 3.0f);
+QVector3D cameraFront(0.0f, 0.0f, -1.0f);
 
 AXBOpenGLWidget::AXBOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent) {
     setFocusPolicy(Qt::StrongFocus);
     timer.setInterval(200);
     timer.start();
+    elapsedTimer.start();
     auto connection = connect(&timer, &QTimer::timeout, [this] {
         update();
     });
@@ -98,7 +113,18 @@ void AXBOpenGLWidget::setPolygonMode(const bool isPolygon) {
     update();
 }
 
+float deltaTime;
+float lastTime;
+
 void AXBOpenGLWidget::keyPressEvent(QKeyEvent *event) {
+    const auto currentTime = static_cast<float>(elapsedTimer.elapsed());
+    deltaTime = currentTime - lastTime;
+    deltaTime = deltaTime <= 50 ? deltaTime : 50;
+    lastTime = currentTime;
+    const float cameraSpeed = 0.002f * deltaTime;
+
+    QVector3D up(0.0f, 1.0f, 0.0f);
+    QVector3D cameraRight = QVector3D::crossProduct(cameraFront, up);
     switch (event->key()) {
         case Qt::Key_Up:
             if (mixValue + 0.1f > 1.0f)
@@ -112,11 +138,57 @@ void AXBOpenGLWidget::keyPressEvent(QKeyEvent *event) {
             else
                 mixValue = mixValue - 0.1f;
             break;
+        case Qt::Key_W:
+            cameraPos += cameraSpeed * cameraFront;
+            break;
+        case Qt::Key_S:
+            cameraPos -= cameraSpeed * cameraFront;
+            break;
+        case Qt::Key_A:
+            cameraPos += cameraSpeed * cameraRight;
+            break;
+        case Qt::Key_D:
+            cameraPos -= cameraSpeed * cameraRight;
+            break;
         default: ;
     }
     makeCurrent();
     bool bind = shaderProgram.bind();
     shaderProgram.setUniformValue("mixValue", mixValue);
+    doneCurrent();
+    update();
+}
+
+void AXBOpenGLWidget::mouseMoveEvent(QMouseEvent *event) {
+    static QPoint deltaPos;
+    static QPoint lastPos;
+    static float yaw = -90;
+    static float pitch = 0;
+    const auto currentPos = event->pos();
+    deltaPos = currentPos - lastPos;
+    if (abs(deltaPos.x()) > 50 || abs(deltaPos.y()) > 50) deltaPos = QPoint(0, 0);
+    lastPos = currentPos;
+    constexpr float sensitivity = 0.1f;
+    deltaPos *= sensitivity;
+    yaw += static_cast<float>(deltaPos.x());
+    pitch -= static_cast<float>(deltaPos.y());
+    if (pitch > 89.0f) pitch = 89.0f;
+    if (pitch < -89.0f) pitch = -89.0f;
+    cameraFront.setX(static_cast<float>(cos(yaw * M_PI / 180) * cos(pitch * M_PI / 180)));
+    cameraFront.setY(static_cast<float>(sin(pitch * M_PI / 180)));
+    cameraFront.setZ(static_cast<float>(sin(yaw * M_PI / 180) * cos(pitch * M_PI / 180)));
+    cameraFront.normalize();
+    update();
+}
+
+void AXBOpenGLWidget::wheelEvent(QWheelEvent *event) {
+    fov -= static_cast<float>(event->angleDelta().y()) / 120;
+    if (fov <= 1.0f) fov = 1.0f;
+    if (fov >= 75.0f) fov = 75.0f;
+    makeCurrent();
+    projection.setToIdentity();
+    projection.perspective(fov, static_cast<float>(width() / height()), 0.1f, 100.0f);
+    shaderProgram.setUniformValue("Projection", projection);
     doneCurrent();
     update();
 }
@@ -138,10 +210,9 @@ void AXBOpenGLWidget::initializeGL() {
     shaderProgram.setUniformValue("texture1", 1);
     shaderProgram.setUniformValue("mixValue", mixValue);
 
-    projection.perspective(45, static_cast<float>(width()) / static_cast<float>(height()), 0.1f, 100.0f);
-    view.translate(0.0f, 0.0f, -3.0f);
+    projection.perspective(fov, static_cast<float>(width()) / static_cast<float>(height()), 0.1f, 100.0f
+    );
     shaderProgram.setUniformValue("Projection", projection);
-    shaderProgram.setUniformValue("View", view);
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -193,12 +264,20 @@ void AXBOpenGLWidget::paintGL() {
     }
     texture0->bind(0);
     texture1->bind(1);
-    const auto timeValue = QTime::currentTime().msec();
-    model.setToIdentity();
-    model.rotate(static_cast<float>(45), 1.0f, 0.0f, 0.0f);
-    shaderProgram.setUniformValue("Model", model);
 
-    glDrawArrays(shapeType, 0, 36);
+    view.setToIdentity();
+    view.lookAt(cameraPos, cameraPos + cameraFront, QVector3D(0.0f, 1.0f, 0.0f));
+    shaderProgram.setUniformValue("View", view);
+
+
+    for (auto i = 0; i < cubePositions.count(); i++) {
+        auto position = cubePositions[i];
+        model.setToIdentity();
+        model.translate(position);
+        model.rotate(45, 1.0f, 0.2f, 5.0f);
+        shaderProgram.setUniformValue("Model", model);
+        glDrawArrays(shapeType, 0, 36);
+    }
 
     glBindVertexArray(0);
 }
